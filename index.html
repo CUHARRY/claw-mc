@@ -420,7 +420,7 @@
   <header class="w-full max-w-[410px] flex items-center justify-between py-2 px-1 text-xs">
     <button onclick="openDareStudio()" class="bg-purple-900/70 hover:bg-purple-800 text-purple-200 border border-purple-400/50 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 shadow active:scale-95 transition">
       <span>✏️ Dare Studio</span>
-      <span id="dareBadgeCount" class="bg-pink-600 text-white rounded-full px-1.5 text-[10px] font-black">40</span>
+      <span id="dareBadgeCount" class="bg-pink-600 text-white rounded-full px-1.5 text-[10px] font-black">41</span>
     </button>
     <div class="flex items-center gap-1.5">
       <button onclick="reseedPitBalls()" title="Reshuffle Chamber Balls" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-600 px-2 py-1.5 rounded-lg font-bold">
@@ -644,6 +644,7 @@
     }
 
     const DEFAULT_DARE_POOL = [
+      "Please check this link for your surprise: https://docs.google.com/document/d/1XUcXqydTXKLP7AppaE8qeUppnURBrJ5B2HQrjt7QA-8/edit?usp=drive_link",
       "💆 Give the player to your right a 1-minute shoulder massage.",
       "☕ Buy the winner their favorite beverage on the next hangout.",
       "🎤 Sing 30 seconds of any 90s pop chorus out loud with passion.",
@@ -686,7 +687,7 @@
       "Ultimate Dare ❤️‍🔥: You get 60 seconds to make me blush using compliments, whispers, kisses or your most irresistible flirting. If you succeed, you get to choose your reward!"
     ];
 
-    const STORAGE_KEY_DARES = 'claw_arcade_dares_v2';
+    const STORAGE_KEY_DARES = 'claw_arcade_dares_v3';
     let darePool = [];
     const BALL_COLORS = ['#ff2a6d', '#ffd166', '#05d9e8', '#06d6a0', '#a056f7', '#ff9f1c', '#ff5722', '#4cc9f0'];
 
@@ -717,6 +718,7 @@
     let moveInterval = null;
     let cooldownTimerInterval = null;
     let activePitBalls = [];
+    let lastWonBall = null;
 
     function initGame() {
       loadDares();
@@ -947,20 +949,50 @@
     }
 
     function deliverPrizeCapsule(ballData) {
+      lastWonBall = ballData;
       const tray = document.getElementById('dispenserTray');
-      tray.innerHTML = `
-        <div class="dispensed-ball" onclick="openPrizeModal('${encodeURIComponent(ballData.dare)}')" style="background:${ballData.color}">
-          <span>🎁</span>
-          <span>BALL #${ballData.id}: TAP TO OPEN</span>
-        </div>
-      `;
+      tray.innerHTML = '';
+
+      const ballBtn = document.createElement('div');
+      ballBtn.className = 'dispensed-ball';
+      ballBtn.style.backgroundColor = ballData.color;
+      ballBtn.innerHTML = `<span>🎁</span><span>BALL #${ballData.id}: TAP TO OPEN</span>`;
+      
+      const onOpen = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        openPrizeModal();
+      };
+      ballBtn.addEventListener('touchend', onOpen, { passive: false });
+      ballBtn.addEventListener('click', onOpen);
+
+      tray.appendChild(ballBtn);
     }
 
-    function openPrizeModal(encodedDare) {
+    function openPrizeModal() {
+      if (!lastWonBall) return;
       initAudio();
       playTone(587.33, 'triangle', 0.3, 0.1);
-      const dare = decodeURIComponent(encodedDare);
-      document.getElementById('prizeDareText').innerText = dare;
+      
+      const dare = lastWonBall.dare;
+      const dareEl = document.getElementById('prizeDareText');
+      
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+      const urlMatch = dare.match(urlRegex);
+
+      if (urlMatch) {
+        const url = urlMatch[0];
+        const textBefore = dare.replace(url, '').trim();
+        dareEl.innerHTML = `
+          ${textBefore ? `<div class="mb-3 text-sm text-pink-200">${escapeHtml(textBefore)}</div>` : ''}
+          <a href="${url}" target="_blank" rel="noopener noreferrer" 
+            class="block w-full py-3 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-black rounded-xl shadow-lg shadow-cyan-500/40 text-center uppercase tracking-wider text-sm transition transform active:scale-95">
+            🎁 OPEN SURPRISE DOCUMENT 🔗
+          </a>
+        `;
+      } else {
+        dareEl.innerText = dare;
+      }
+
       document.getElementById('prizeModal').classList.add('open');
       document.getElementById('dispenserTray').innerHTML = `
         <span class="text-xs text-slate-500 font-semibold tracking-wider">PRIZE RETRIEVED</span>
@@ -971,7 +1003,7 @@
       document.getElementById('prizeModal').classList.remove('open');
     }
 
-    const COOLDOWN_KEY = 'claw_machine_lockout_until_v2';
+    const COOLDOWN_KEY = 'claw_machine_lockout_until_v3';
 
     function startLockoutCooldown(seconds) {
       const unlockTime = Date.now() + seconds * 1000;
