@@ -22,7 +22,6 @@
       user-select: none;
       -webkit-user-select: none;
       -webkit-touch-callout: none;
-      touch-action: manipulation;
     }
 
     body {
@@ -119,7 +118,8 @@
       flex-direction: column;
       align-items: center;
       z-index: 20;
-      transform: translateX(-50%);
+      transform: translateX(-50%) translate3d(0,0,0);
+      -webkit-transform: translateX(-50%) translate3d(0,0,0);
       pointer-events: none;
     }
 
@@ -159,25 +159,32 @@
       background: linear-gradient(180deg, #e4e7eb 0%, #828a99 100%);
       border-radius: 3px;
       top: 0;
+      -webkit-transition: -webkit-transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
     .finger-left {
       left: 7px;
       transform-origin: top center;
+      -webkit-transform-origin: top center;
       transform: rotate(-32deg);
+      -webkit-transform: rotate(-32deg);
     }
     .finger-right {
       right: 7px;
       transform-origin: top center;
+      -webkit-transform-origin: top center;
       transform: rotate(32deg);
+      -webkit-transform: rotate(32deg);
     }
 
     .claw-fingers.closed .finger-left {
       transform: rotate(14deg);
+      -webkit-transform: rotate(14deg);
     }
     .claw-fingers.closed .finger-right {
       transform: rotate(-14deg);
+      -webkit-transform: rotate(-14deg);
     }
 
     .claw-held-ball {
@@ -290,6 +297,8 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .arcade-dir-btn:active {
@@ -313,6 +322,8 @@
       align-items: center;
       justify-content: center;
       text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
 
     .drop-btn:active:not(:disabled) {
@@ -354,6 +365,7 @@
       display: flex;
       align-items: center;
       gap: 6px;
+      -webkit-tap-highlight-color: transparent;
     }
 
     @keyframes prizePop {
@@ -367,6 +379,7 @@
       inset: 0;
       background: rgba(4, 2, 10, 0.85);
       backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -398,7 +411,6 @@
       transform: scale(1);
     }
 
-    /* Custom scrollbars */
     .custom-scroll::-webkit-scrollbar {
       width: 5px;
     }
@@ -418,7 +430,7 @@
   <header class="w-full max-w-[410px] flex items-center justify-between py-2 px-1 text-xs">
     <button onclick="openDareStudio()" class="bg-purple-900/70 hover:bg-purple-800 text-purple-200 border border-purple-400/50 px-3 py-1.5 rounded-lg font-bold flex items-center gap-1.5 shadow active:scale-95 transition">
       <span>✏️ Dare Studio</span>
-      <span id="dareBadgeCount" class="bg-pink-600 text-white rounded-full px-1.5 text-[10px] font-black">20</span>
+      <span id="dareBadgeCount" class="bg-pink-600 text-white rounded-full px-1.5 text-[10px] font-black">1</span>
     </button>
     <div class="flex items-center gap-1.5">
       <button onclick="reseedPitBalls()" title="Reshuffle Chamber Balls" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 border border-slate-600 px-2 py-1.5 rounded-lg font-bold">
@@ -451,7 +463,7 @@
       <!-- Top Track Rail -->
       <div class="track-rail"></div>
 
-      <!-- Claw Assembly (Rigged with CSS & Controlled by JS) -->
+      <!-- Claw Assembly -->
       <div class="claw-assembly" id="clawAssembly">
         <div class="claw-carriage"></div>
         <div class="claw-cable" id="clawCable"></div>
@@ -496,7 +508,7 @@
           <button class="arcade-dir-btn" id="btnRight" title="Hold to Move Right">▶</button>
         </div>
         <!-- Trigger Drop Button -->
-        <button class="drop-btn" id="btnDrop" onclick="triggerClawDrop()">DROP CLAW</button>
+        <button class="drop-btn" id="btnDrop">DROP CLAW</button>
       </div>
 
       <!-- Bottom Prize Collection Dispenser -->
@@ -515,7 +527,7 @@
       <h2 class="text-xl font-black text-amber-300 uppercase tracking-wider mb-1">DARE UNLOCKED!</h2>
       <p class="text-xs text-slate-300 mb-3 font-semibold uppercase">Ball capsule opened! Perform this dare:</p>
       
-      <div class="bg-black/60 border border-pink-500/50 rounded-xl p-4 mb-4 text-white font-bold text-base leading-snug" id="prizeDareText">
+      <div class="bg-black/60 border border-pink-500/50 rounded-xl p-4 mb-4 text-white font-bold text-base leading-snug break-words" id="prizeDareText">
         Dare description goes here
       </div>
 
@@ -546,9 +558,8 @@
         </button>
       </div>
 
-      <!-- TAB 1: Live List Management (Quick Add + Individual Edit/Delete) -->
+      <!-- TAB 1: Live List Management -->
       <div id="tabListContent" class="flex-1 flex flex-col min-h-0">
-        <!-- Quick Add Box -->
         <div class="flex gap-1.5 mb-2">
           <input type="text" id="quickDareInput" placeholder="Type a new dare here..." maxlength="180"
             class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-pink-500"
@@ -558,10 +569,7 @@
           </button>
         </div>
 
-        <!-- Scrollable Dare Items List -->
-        <div id="dareItemsList" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-1.5 max-h-[220px]">
-          <!-- Populated by JS -->
-        </div>
+        <div id="dareItemsList" class="flex-1 overflow-y-auto custom-scroll pr-1 space-y-1.5 max-h-[220px]"></div>
       </div>
 
       <!-- TAB 2: Bulk Text Editor -->
@@ -583,7 +591,6 @@
         </div>
 
         <div class="grid grid-cols-2 gap-2 text-xs">
-          <!-- Hidden File Input for import -->
           <input type="file" id="fileUploadInput" accept=".txt,.json" onchange="handleFileImport(event)" class="hidden">
           <button onclick="document.getElementById('fileUploadInput').click()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold py-1.5 rounded-lg text-center flex items-center justify-center gap-1">
             <span>📥 Import File</span>
@@ -611,11 +618,18 @@
     let soundEnabled = true;
 
     function initAudio() {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+      if (!soundEnabled) return;
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+        if (!audioCtx) {
+          audioCtx = new AudioContextClass();
+        }
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+      } catch (e) {
+        // Safe failover for restricted iOS contexts
       }
     }
 
@@ -626,9 +640,8 @@
     }
 
     function playTone(freq, type = 'sine', duration = 0.15, vol = 0.1) {
-      if (!soundEnabled) return;
+      if (!soundEnabled || !audioCtx) return;
       try {
-        initAudio();
         const osc = audioCtx.createOscillator();
         const gain = audioCtx.createGain();
         osc.type = type;
@@ -639,9 +652,7 @@
         gain.connect(audioCtx.destination);
         osc.start();
         osc.stop(audioCtx.currentTime + duration);
-      } catch (e) {
-        // Audio policy ignore
-      }
+      } catch (e) {}
     }
 
     function playMotorHum() {
@@ -669,6 +680,12 @@
     // --- Default Dare Pool & Storage Management ---
     const DEFAULT_DARE_POOL = [
       "Please check this link for your surprise: https://docs.google.com/document/d/1XUcXqydTXKLP7AppaE8qeUppnURBrJ5B2HQrjt7QA-8/edit?usp=drive_link",
+      "Propose in the most dramatic Bollywood style possible 💍",
+      "Flirt for two minutes in a foreign accent without laughing 😂",
+      "Perform a playful 30-second dance to the most unromantic song 💃",
+      "Give three ridiculously cheesy pickup lines 😘",
+      "Hold eye contact for 30 seconds without laughing or looking away ❤️",
+      "Whisper three secrets you've felt too shy to say aloud 🤫"
     ];
 
     const STORAGE_KEY_DARES = 'claw_arcade_dares_v1';
@@ -680,7 +697,7 @@
       if (stored) {
         try {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length >= 2) {
+          if (Array.isArray(parsed) && parsed.length >= 1) {
             darePool = parsed;
             return;
           }
@@ -699,10 +716,10 @@
     let remainingTurns = 10;
     let outcomesList = [];
     let isClawBusy = false;
-    let clawX = 60; // Claw X coordinate in px
+    let clawX = 60;
     let moveInterval = null;
     let cooldownTimerInterval = null;
-    let activePitBalls = []; // 10 to 15 balls currently in pit
+    let activePitBalls = [];
 
     function initGame() {
       loadDares();
@@ -717,15 +734,15 @@
       checkPersistentCooldown();
       updateTurnsDisplay();
       setClawX(clawX);
+      bindTouchEvents();
     }
 
-    // Pick 10-15 random dares to display as physical balls in the pit
     function reseedPitBalls() {
       const pit = document.getElementById('pitContainer');
       pit.innerHTML = '';
       activePitBalls = [];
 
-      const count = Math.min(darePool.length, Math.floor(Math.random() * 6) + 10); // 10 to 15 balls
+      const count = Math.min(darePool.length, Math.floor(Math.random() * 6) + 10);
       const shuffledDares = [...darePool].sort(() => Math.random() - 0.5);
 
       for (let i = 0; i < count; i++) {
@@ -736,7 +753,6 @@
         const ballEl = document.createElement('div');
         ballEl.className = 'capsule-ball';
         ballEl.style.backgroundColor = color;
-        // Jitter for realistic pile layout
         const rx = (Math.random() * 8 - 4).toFixed(1);
         const ry = (Math.random() * 6 - 3).toFixed(1);
         ballEl.style.transform = `translate(${rx}px, ${ry}px)`;
@@ -747,7 +763,7 @@
       updateDareStatsUI();
     }
 
-    // --- Interactive Mobile Claw Controls ---
+    // --- Claw Movement & Touch Controls ---
     const MIN_CLAW_X = 22;
     const MAX_CLAW_X = 315;
 
@@ -780,22 +796,34 @@
     function attachPadListener(btnId, delta) {
       const el = document.getElementById(btnId);
       const onStart = (e) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         startSteering(delta);
       };
       const onEnd = (e) => {
-        e.preventDefault();
+        if (e.cancelable) e.preventDefault();
         stopSteering();
       };
 
-      el.addEventListener('mousedown', onStart);
       el.addEventListener('touchstart', onStart, { passive: false });
+      el.addEventListener('touchend', onEnd, { passive: false });
+      el.addEventListener('mousedown', onStart);
       window.addEventListener('mouseup', onEnd);
-      window.addEventListener('touchend', onEnd);
     }
 
-    attachPadListener('btnLeft', -7);
-    attachPadListener('btnRight', 7);
+    function bindTouchEvents() {
+      attachPadListener('btnLeft', -7);
+      attachPadListener('btnRight', 7);
+
+      const dropBtn = document.getElementById('btnDrop');
+      const handleDropTrigger = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        initAudio();
+        triggerClawDrop();
+      };
+
+      dropBtn.addEventListener('touchend', handleDropTrigger, { passive: false });
+      dropBtn.addEventListener('click', handleDropTrigger);
+    }
 
     // Keyboard support
     window.addEventListener('keydown', (e) => {
@@ -809,7 +837,6 @@
     async function triggerClawDrop() {
       if (isClawBusy || remainingTurns <= 0) return;
       isClawBusy = true;
-      initAudio();
 
       const btnDrop = document.getElementById('btnDrop');
       const btnLeft = document.getElementById('btnLeft');
@@ -836,8 +863,12 @@
       statusText.className = 'text-amber-300 text-xs font-bold uppercase tracking-wider';
       statusDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-amber-300 animate-pulse';
 
-      clawAssembly.style.transition = 'top 0.85s cubic-bezier(0.3, 0, 0.2, 1)';
-      clawCable.style.transition = 'height 0.85s cubic-bezier(0.3, 0, 0.2, 1)';
+      const transRule = 'all 0.85s cubic-bezier(0.3, 0, 0.2, 1)';
+      clawAssembly.style.webkitTransition = transRule;
+      clawAssembly.style.transition = transRule;
+      clawCable.style.webkitTransition = transRule;
+      clawCable.style.transition = transRule;
+
       clawAssembly.style.top = '175px';
       clawCable.style.height = '165px';
       playTone(180, 'triangle', 0.8, 0.05);
@@ -849,38 +880,37 @@
       playGraspSfx();
       await delay(350);
 
-      // Random active ball chosen
       const pickedBall = activePitBalls[Math.floor(Math.random() * activePitBalls.length)];
       heldBall.style.backgroundColor = pickedBall.color;
       heldBall.innerText = pickedBall.id;
       heldBall.style.display = 'flex';
 
       if (willWin) {
-        // SUCCESS WIN PATH
+        // Firm grasp lift
         statusText.innerText = 'Firm Grip!';
         statusText.className = 'text-emerald-400 text-xs font-bold uppercase tracking-wider';
         statusDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse';
 
-        // Lift to top
         clawAssembly.style.top = '6px';
         clawCable.style.height = '28px';
         playTone(320, 'triangle', 0.8, 0.05);
         await delay(900);
 
-        // Move to chute
+        // Travel to drop chute
         statusText.innerText = 'Moving to Chute...';
-        clawAssembly.style.transition = 'left 0.85s ease-in-out';
+        const chuteTrans = 'left 0.85s ease-in-out';
+        clawAssembly.style.webkitTransition = chuteTrans;
+        clawAssembly.style.transition = chuteTrans;
         clawAssembly.style.left = '42px';
         playTone(280, 'sine', 0.85, 0.05);
         await delay(900);
         setClawX(42);
 
-        // Drop into chute
+        // Open fingers & dispense
         clawFingers.classList.remove('closed');
         heldBall.style.display = 'none';
         playWinFanfare();
 
-        // Confetti burst
         if (typeof confetti === 'function') {
           confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
         }
@@ -890,14 +920,13 @@
         await delay(500);
 
       } else {
-        // REALISTIC SLIP / FAIL PATH
+        // Slippage mid-air
         statusText.innerText = 'Lifting...';
         clawAssembly.style.top = '100px';
         clawCable.style.height = '95px';
         playTone(220, 'triangle', 0.5, 0.05);
         await delay(550);
 
-        // Mechanical slip mid-air
         clawFingers.classList.remove('closed');
         heldBall.style.display = 'none';
         playSlipSfx();
@@ -907,19 +936,19 @@
         statusDot.className = 'inline-block w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping';
         await delay(400);
 
-        // Retract empty claw to ceiling
         clawAssembly.style.top = '6px';
         clawCable.style.height = '28px';
         await delay(600);
       }
 
+      clawAssembly.style.webkitTransition = '';
       clawAssembly.style.transition = '';
+      clawCable.style.webkitTransition = '';
       clawCable.style.transition = '';
       isClawBusy = false;
 
-      // Lockout check
       if (remainingTurns <= 0) {
-        startLockoutCooldown(60); // 1-minute lockout
+        startLockoutCooldown(60);
       } else {
         btnDrop.disabled = false;
         btnLeft.disabled = false;
@@ -945,9 +974,22 @@
       initAudio();
       playTone(587.33, 'triangle', 0.3, 0.1);
       const dare = decodeURIComponent(encodedDare);
-      document.getElementById('prizeDareText').innerText = dare;
-      document.getElementById('prizeModal').classList.add('open');
+      
+      const dareEl = document.getElementById('prizeDareText');
+      if (dare.startsWith('http://') || dare.startsWith('https://') || dare.includes('http')) {
+        const urlMatch = dare.match(/(https?:\/\/[^\s]+)/g);
+        if (urlMatch) {
+          const url = urlMatch[0];
+          const textBefore = dare.replace(url, '');
+          dareEl.innerHTML = `${escapeHtml(textBefore)} <br><a href="${url}" target="_blank" rel="noopener noreferrer" class="text-cyan-300 underline font-black block mt-2 p-2 bg-pink-950/70 rounded border border-cyan-400">Open Surprise Document 🔗</a>`;
+        } else {
+          dareEl.innerText = dare;
+        }
+      } else {
+        dareEl.innerText = dare;
+      }
 
+      document.getElementById('prizeModal').classList.add('open');
       document.getElementById('dispenserTray').innerHTML = `
         <span class="text-xs text-slate-500 font-semibold tracking-wider">PRIZE RETRIEVED</span>
       `;
@@ -1032,7 +1074,7 @@
       document.getElementById('studioPitCount').innerText = activePitBalls.length;
     }
 
-    // --- Interactive Dare Studio Management (In-UI Editing, Adding, Deleting, Exporting) ---
+    // --- Interactive Dare Studio Management ---
     function openDareStudio() {
       renderDareListUI();
       document.getElementById('bulkDaresTextarea').value = darePool.join('\n');
@@ -1096,8 +1138,8 @@
     }
 
     function deleteDareByIndex(index) {
-      if (darePool.length <= 2) {
-        showTemporaryNotice('You need at least 2 dares in the pool!');
+      if (darePool.length <= 1) {
+        showTemporaryNotice('You need at least 1 dare in the pool!');
         return;
       }
       darePool.splice(index, 1);
@@ -1135,8 +1177,8 @@
       const raw = document.getElementById('bulkDaresTextarea').value;
       const parsed = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
 
-      if (parsed.length < 2) {
-        showTemporaryNotice('Please provide at least 2 dare lines!');
+      if (parsed.length < 1) {
+        showTemporaryNotice('Please provide at least 1 dare line!');
         return;
       }
 
@@ -1174,21 +1216,21 @@
             list = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
           }
 
-          if (list.length >= 2) {
+          if (list.length >= 1) {
             darePool = list;
             saveDares();
             reseedPitBalls();
             renderDareListUI();
             showTemporaryNotice(`Loaded ${list.length} dares from ${file.name}`);
           } else {
-            showTemporaryNotice('File must have at least 2 dare lines.');
+            showTemporaryNotice('File must have at least 1 dare line.');
           }
         } catch (err) {
           showTemporaryNotice('Failed to parse file. Make sure it is valid text/json.');
         }
       };
       reader.readAsText(file);
-      event.target.value = ''; // Reset input
+      event.target.value = '';
     }
 
     function exportDaresToFile() {
